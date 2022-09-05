@@ -1,0 +1,838 @@
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+
+local Window = Library.CreateLib("Police hub (Lumber tycoon 2)    Toggle UI with Z", "GrapeTheme")
+
+local PlayerTab = Window:NewTab("Player")
+local VisualsTab = Window:NewTab("Visuals")
+
+local PlayerMovementSection = PlayerTab:NewSection("Player Movement")
+
+local Section = PlayerTab:NewSection("Player")
+
+local ESPSection = VisualsTab:NewSection("You can only see")
+
+getgenv().InfJump = nil
+getgenv().Tracers = nil
+getgenv().FreezeWater = nil
+
+-- Field Of View Slider
+
+Section:NewSlider("Field Of View", "Changes your FOV", 120, 60, function(fov)
+    game.Workspace.Camera.FieldOfView = fov
+end)
+
+
+
+-- Walk Speed Slider
+
+PlayerMovementSection:NewSlider("Walk speed", "make you faster temp", 500, 16, function(s) -- 500 (MaxValue) | 0 (MinValue)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = s
+end) 
+
+-- Jump Power Slider
+
+PlayerMovementSection:NewSlider("Jump Power", "make you jump higher temp", 500, 50, function(s) -- 500 (MaxValue) | 0 (MinValue)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = s
+end)
+
+-- Infinite Jump Toggle
+
+PlayerMovementSection:NewToggle("Infinite jump", "Makes you able to jump a lot", function(toggled)
+    if toggled then
+        getgenv().InfJump = true
+        spawn(function()
+            while getgenv().InfJump == true do
+                game:GetService("UserInputService").JumpRequest:connect(function()
+                    if getgenv().InfJump == true then
+                        game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass'Humanoid':ChangeState("Jumping")
+                    end
+                end)
+                wait()
+            end
+        end)
+    else
+        getgenv().InfJump = false
+    end
+end)
+
+Section:NewButton("Anti-afk", "anti-afk bypass the 20min", function()
+    print("Clicked")
+    repeat task.wait() until game:IsLoaded()
+    for i,v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
+        v:Disable()
+    end
+end)
+
+-- Tracers
+
+ESPSection:NewToggle("Tracers", "Enables tracers", function(toggled)
+    if toggled then
+        getgenv().Tracers = true
+        spawn(function()
+            local lplr = game.Players.LocalPlayer
+            local camera = game:GetService("Workspace").CurrentCamera
+            local CurrentCamera = workspace.CurrentCamera
+            local worldToViewportPoint = CurrentCamera.worldToViewportPoint
+            for i,v in pairs(game.Players:GetChildren()) do
+                local Tracer = Drawing.new("Line")
+                Tracer.Visible = false
+                Tracer.Thickness = 1
+                Tracer.Color = Color3.new(255,255,255)
+                Tracer.Transparency = 1
+                function lineesp()
+                    game:GetService("RunService").RenderStepped:Connect(function()
+                        if getgenv().Tracers then
+                            if v.Character ~= nil and v.Character:FindFirstChild("HumanoidRootPart") ~= nil and v ~= lplr and v.Character.Humanoid.Health > 0 then
+                                local Vector,OnScreen = camera:worldToViewportPoint(v.Character.HumanoidRootPart.Position)
+                                if OnScreen then
+                                    Tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 1.5)
+                                    Tracer.To = Vector2.new(Vector.X, Vector.Y)
+                                    Tracer.Visible = true
+                                else
+                                    Tracer.Visible = false
+                                end
+                            else
+                                Tracer.Visible = false
+                            end
+                        else
+                            Tracer:Remove()
+                        end
+                    end)
+                end
+                coroutine.wrap(lineesp)()
+            end
+            while getgenv().Tracers == true and wait() do
+                game.Players.PlayerAdded:Connect(function(v)
+                    if getgenv().Tracers then
+                        local Tracer = Drawing.new("Line")
+                        Tracer.Visible = false
+                        Tracer.Thickness = 1
+                        Tracer.Color = Color3.new(255,255,255)
+                        Tracer.Transparency = 1
+                        function lineesp()
+                            game:GetService("RunService").RenderStepped:Connect(function()
+                                if getgenv().Tracers then
+                                    if v ~= nil and v.Character ~= nil and v.Character:FindFirstChild("HumanoidRootPart") ~= nil and v ~= lplr and v.Character.Humanoid.Health > 0 then
+                                        local Vector,OnScreen = camera:worldToViewportPoint(v.Character.HumanoidRootPart.Position)
+                                        if OnScreen then
+                                            Tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 1.5)
+                                            Tracer.To = Vector2.new(Vector.X, Vector.Y)
+                                            Tracer.Visible = true
+                                        else
+                                            Tracer.Visible = false
+                                        end
+                                    else
+                                        Tracer.Visible = false
+                                    end
+                                else
+                                    Tracer:Delete()
+                                end
+                            end)
+                        end
+                        coroutine.wrap(lineesp)()
+                    end
+                end)
+            end
+        end)
+    else
+        getgenv().Tracers = false
+    end
+end)
+
+
+
+ESPSection:NewButton("flashlight f to trun on", "f to trun on", function()
+    print("Clicked")
+    local mouse = game.Players.LocalPlayer:GetMouse()
+function Light()
+    player = game.Players.LocalPlayer
+    playerChar = player.Character
+    playerLight = playerChar.Torso:FindFirstChild("Light")
+    if playerLight then
+        playerLight:Destroy()
+    else
+        light = Instance.new("SurfaceLight",playerChar:FindFirstChild("Torso"))
+        light.Name = "Light"
+        light.Range = 11 -- Change to distance ofthe Light.
+        light.Brightness = 11 -- Change to how much.
+        light.Shadows = false -- Change it to True/False.
+
+        
+        local play = Instance.new("Sound",playerChar:FindFirstChild("Head"))
+        play.SoundId = "http://www.roblox.com/asset/?id=198914875"
+        play:Play()
+        
+    end
+end
+mouse.KeyDown:connect(function(key)
+key = key:lower()
+if key == "f" then
+    Light()
+end
+end)
+end)
+
+ESPSection:NewButton("Fog Remover", "say by to the Fog", function()
+    print("Clicked")
+    game.Lighting.FogEnd = 100000
+    game.Lighting.FogStart = 0
+    game.Lighting.ClockTime = 14
+    game.Lighting.Brightness = 2
+    game.Lighting.GlobalShadows = false
+end)
+
+ESPSection:NewButton("Fullbright", "makes it brighter", function()
+    print("Clicked")
+    loadstring(game:HttpGet("https://pastebin.com/raw/06iG6YkU", true))()
+end)
+
+-- Freeze Water
+
+
+
+Section:NewButton("No-Clip", "walk through item's", function()
+    print("Clicked")
+    local Noclip = nil
+local Clip = nil
+
+function noclip()
+	Clip = false
+	local function Nocl()
+		if Clip == false and game.Players.LocalPlayer.Character ~= nil then
+			for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+				if v:IsA('BasePart') and v.CanCollide and v.Name ~= floatName then
+					v.CanCollide = false
+				end
+			end
+		end
+		wait(0.21) -- basic optimization
+	end
+	Noclip = game:GetService('RunService').Stepped:Connect(Nocl)
+end
+
+function clip()
+	if Noclip then Noclip:Disconnect() end
+	Clip = true
+end
+
+noclip() -- to toggle noclip() and clip()
+end)
+
+local Tab = Window:NewTab("Teleport")
+
+local Section = Tab:NewSection("Teleport")
+
+Section:NewButton("Click to tp", "use mose to tp", function()
+    print("Clicked")
+mouse = game.Players.LocalPlayer:GetMouse()
+tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Click Teleport"
+tool.Activated:connect(function()
+local pos = mouse.Hit+Vector3.new(0,2.5,0)
+pos = CFrame.new(pos.X,pos.Y,pos.Z)
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
+end)
+tool.Parent = game.Players.LocalPlayer.Backpack
+end)
+
+Section:NewButton("spawn", "Teleport you to spawn", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(172, 2.9, 74)
+end)
+
+Section:NewButton("The Den", "Teleports You To The Den", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(323, 41.7, 1930)
+end)
+
+Section:NewButton("lighthouse", "Teleports You To The Lighthouse", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1464.8, 355.2, 3257.19)
+end)
+
+Section:NewButton("Safari", "Teleports You To The Safari", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(111.8, 11, -998.8)
+end)
+
+Section:NewButton("Bob's Shack", "Teleports You To Bob's Shack", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(260, 8.4, -2542)
+end)
+
+Section:NewButton("cabin", "Teleports You To The Cabin", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1244.6, 63.59, 2306)
+end)
+
+Section:NewButton("Boxed Cars", "Teleports You To The Boxed Cars", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(509, 3.19, -1463)
+end)
+
+Section:NewButton("Frost Trees", "Teleports You To The Frost Trees", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1560, 410.3, 3274)
+end)
+
+Section:NewButton("Land Store", "Teleports You To The Landstore", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(258.3, 3.2, -99)
+end)
+
+Section:NewButton("Link's Logic", "Teleports You To Link's Logic", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(4605, 3, -727)
+end)
+
+Section:NewButton("Palm Island", "Teleports You To The Palm Island", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2549, -5.8, -42)
+end)
+
+Section:NewButton("Fine Art Shop", "Teleports You To The Art Shop", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(5207, -166.2, 719)
+end)
+
+Section:NewButton("Cave", "Teleports You To The Cave", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(3581, -179.53, 430)
+end)
+
+Section:NewButton("Shrine Of Sight", "Teleports You To The Shrine Of Sight", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1600, 195.4, 919)
+end)
+
+Section:NewButton("Fancy Furnishings", "Teleports You To Fancy Furishings", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(491, 3.2, -1720)
+end)
+
+Section:NewButton("Docks", "Teleports You To The Docks", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1114, -1.2, -197)
+end)
+
+Section:NewButton("Strange Man (Power)", "Teleports You To The Strange Man", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1061, 16.7, 1131)
+end)
+
+Section:NewButton("Wood Dropoff", "Teleports You To The Wood Dropoff", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(323.4, -2.7, 134.7)
+end)
+
+Section:NewButton("Wood R Us", "Teleports You To Wood R Us", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(265, 3.19, 57)
+end)
+
+Section:NewButton("Cherry Meadow", "Teleports You To The Cherry Meadow", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(220.89, 59.8, 1305.8)
+end)
+
+Section:NewButton("Bird Cave", "Teleports You To The Bird Cave", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(4813.1, 17, -978.7)
+end)
+
+Section:NewButton("Lone Cave (Endtimes)", "Teleports You To The End Times Tree Cave/Lone Cave", function()
+    print("Clicked")
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(113, -212.99, -951)
+end)
+
+Section:NewButton("Snow", "Teleports You To The Snow Biome", function()
+    print("Clicked")
+ game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(889.95, 59.79, 1195.55)
+end)
+
+
+local Tab = Window:NewTab("Dupe")
+
+local Section = Tab:NewSection("Dupe")
+
+Section:NewButton("Axe dupe ", "dupe'syour axe 5 times", function()
+    print("Clicked")
+local functions={};
+
+local requirements={
+    AlwaysDay=false, 
+    AlwaysNight=false,
+    SpookEnabled=false,
+    NoFog=false,
+    WaterGodMode=false,
+    WaterFloat=true, 	
+    WaterWalk=false,
+    flyKey='F',
+    hardDragger=false,
+    oldNoclipEnabled=false,
+    antiBlacklist=false,
+    light=false,
+    fastRotate=false,
+    gameMusic=true,
+    uiDarkMode=true,
+    wireMod=false,
+    carColorR=0,
+    carColorG=0,
+    carColorB=0,
+    carMaterial='Plastic',
+    carVisualEffects=false,
+    blackListAll=false,
+    SprintKey='Q',
+    NoclipKey='LeftControl',
+    KeyTP='G',
+    toggleUI='RightShift',
+    FlingKey='H',
+};
+Booleans={
+    DeveloperMode=true,
+    Noclip=false,
+    Sprinting=false,
+    State=false,
+    isFlying=false,
+    isEnabled=true,
+    friendsOnly=false,
+    pingMessages=false,
+    sendNotifications=false,
+    infJumpEnabled=false,
+    memeMode=false,
+    MoneyDuping=false,
+    DisableSlotSaving=false,
+    Flinging=false,
+    DonatingBase=false,
+    alertTarget=true,
+    building=false,
+    treeIsCut=false,
+    isLoopBringTreeEnabled=false,
+    isPlankCut=false,
+    cutAssistEnabled=false,
+    dupeInventory=false,
+    vipMode=false,
+    wireMod=false,
+    axeDuping=true,
+    isBuying=false,
+    AutoBuyingRuki=false,
+    bringBoulders=nil,
+    devMode=true,
+    abortAutobuy=false,
+    loopBuying=false,
+    dragExists=false,
+    StopDespawn=false,
+    managingTarget=false,
+};
+tables={
+    axeList={},
+    allItems={},
+    itemListForBaseDrop={},
+};
+Strings={
+    WalkSpeed=16,
+    flySpeed=150,
+    JumpPower=50,
+    HipHeight=0,
+    colorToSpawn=131,
+    PlayerToAdminWipe=tostring(game.Players.LocalPlayer),
+    buildToBuild='Ancestor',
+    SprintSpeed=20,
+    selectedPlotToLoad=1,
+    specialAutobuyItem='Build Power',
+    CurrentRegion='Region_Main',
+    DestroyStores=false,
+    selectedPlot=1,
+    autoDupeMoneyAmount=1,
+    BaseRecipient=tostring(game.Players.LocalPlayer),
+    autoBuildPlayer=tostring(game.Players.LocalPlayer),
+    autoBuildReciever=tostring(game.Players.LocalPlayer),
+    ToolDuplicationAmount=1,
+    IdentifyType='Owner',
+    bringSelectedTreeAmount=1,
+    selectedTree='Generic',
+    autoBuySelectedItemAmount=1,
+    autoBuySelectedItem='BasicHatchet',
+    plankModel=nil,
+    blueprintModel=nil,
+    selfDuping=false,
+    itemToOpen=nil,
+    itemTypeToWipe='Structure',
+    DonationAmount=1,
+    donationRecipient=tostring(game.Players.LocalPlayer),
+    TreeModel=nil,
+    selectedTarget=tostring(game.Players.LocalPlayer);
+    carSpeed=1.5,
+    selectedWire='NeonWirePinky',
+    baseDropOwner=tostring(game.Players.LocalPlayer),
+    itemToBaseDrop='All Items',
+    baseDropAmount=0
+};
+services={
+    RunService=game:GetService('RunService'),
+    marketplaceService=game:GetService('MarketplaceService'),
+    userInputService=game:GetService('UserInputService'),
+    Lighting=game:GetService('Lighting'),
+    VU=game:GetService('VirtualUser'),
+    teleportService=game:GetService('TeleportService');
+};
+remotes= {
+ clientInteracted=game:GetService('ReplicatedStorage').Interaction.ClientInteracted
+ };
+
+functions.notify=function(title, text, duration)
+    if requirements.Booleans.isEnabled then
+        game.StarterGui:SetCore(
+            'SendNotification',
+            {
+                Title=title,
+                Text=text,
+                Duration=duration;
+            }
+        );
+    end;
+end;
+functions.KillPlayer=function()
+    pcall(function()
+        game.Players.LocalPlayer.Character.Head:Destroy();
+    end);
+end;
+functions.Teleport=function(cf)
+    repeat wait()until game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart');
+    if game.Players.LocalPlayer.Character.Humanoid.Sit then 
+       game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent:SetPrimaryPartCFrame(cf*CFrame.Angles(math.rad(game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent.PrimaryPart.Orientation.X), math.rad(game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent.PrimaryPart.Orientation.Y), math.rad(game.Players.LocalPlayer.Character.Humanoid.SeatPart.Parent.PrimaryPart.Orientation.Z)));
+    elseif not game.Players.LocalPlayer.Character.Humanoid.Sit then 
+        game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(cf)
+    end;
+end;
+functions.DropAllTools=function(Bool)
+   if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+local Oldpos = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame 
+game.Players.LocalPlayer.Character.Humanoid:UnequipTools();
+    for _,Tool in next,game.Players.LocalPlayer.Backpack:children()do 
+        if Tool:IsA('Tool')and Tool:FindFirstChild('ToolName')then 
+Tool.Parent = game.Players.LocalPlayer.Character
+local args = {
+    [1] = game:GetService("Players").LocalPlayer.Character.Tool,
+    [2] = "Drop tool",
+    [3] = Oldpos
+}
+
+game:GetService("ReplicatedStorage").Interaction.ClientInteracted:FireServer(unpack(args))
+            
+end    
+        
+end;
+    end;
+end;
+functions.DupeInventory=function(Quantity)
+    local Oldpos = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame 
+    for i=1,Quantity do 
+        functions.DropAllTools();
+        functions.KillPlayer();
+        wait(10)
+    end;
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Oldpos
+end;
+
+functions.DupeInventory(5) -- 30 is amount
+end)
+
+local Tab = Window:NewTab("Troll")
+
+local Section = Tab:NewSection("Troll")
+
+Section:NewButton("pee", "you now pee", function()
+    print("Clicked")
+   --[[Do not leak by PowerHeadShoot
+]]
+Player = game.Players.LocalPlayer
+Character = Player.Character 
+Head = Character.Head 
+Torso = Character.Torso
+function Weld(x,y)
+       local W = Instance.new("Weld")
+       W.Part0 = x
+       W.Part1 = y
+       local CJ = CFrame.new(x.Position)
+       local C0 = x.CFrame:inverse()*CJ
+       local C1 = y.CFrame:inverse()*CJ
+       W.C0 = C0
+       W.C1 = C1
+       W.Parent = x
+end
+local Breath=Instance.new("Part",Head)
+Breath.CFrame=Torso.CFrame*CFrame.new(0,-1,0)
+Breath.CanCollide=false
+Breath.Transparency=1
+Breath.Size=Vector3.new(0.050,0.050,0.050)
+Air=Instance.new("ParticleEmitter")
+Air.Parent=Breath
+Air.EmissionDirection="Front"
+Air.Rate=500
+Pees=Instance.new("Sound")
+Pees.Parent=Torso
+Pees.SoundId="rbxassetid://258063615"
+Pees.Looped=true
+Pees.Volume=0.8
+Pees:Play()
+Air.Color=ColorSequence.new(Color3.new(255,255,0),Color3.new(255,255,0))
+Air.Speed=NumberRange.new(15,15)
+Air.Acceleration=Vector3.new(0,-25,0)
+Air.Size=NumberSequence.new(0.1,0.1)
+Air.Lifetime=NumberRange.new(0.5,0.5)
+Air.Transparency=NumberSequence.new(0,0)
+Weld(Head,Breath)
+while true do
+local pee = Instance.new("Part", workspace)
+game:GetService("Debris"):AddItem(pee, 10)
+pee.CFrame=Torso.CFrame*CFrame.new(0,-2.9,-6)
+pee.CanCollide=false
+pee.BrickColor=BrickColor.new("New Yeller")
+pee.Transparency=0.4
+pmesh=Instance.new("SpecialMesh")
+pmesh.Parent=pee
+pmesh.Scale=Vector3.new(1,0.1,1)
+pmesh.MeshType="Sphere"
+pee.Anchored=true
+pee.Size=Vector3.new(1.5,0.01,1.5)
+wait(0.00000000001)
+pee.Size=Vector3.new(1.6,0.01,1.6)
+wait(0.00000000001)
+pee.Size=Vector3.new(1.7,0.01,1.7)
+wait(0.00000000001)
+pee.Size=Vector3.new(1.9,0.01,1.9)
+wait(0.00000000001)
+pee.Size=Vector3.new(2,0.01,2)
+wait (1/60)
+end --made by credit
+end)
+
+Section:NewButton("Train", "be come a train", function()
+    print("Clicked")
+    local p = game.Players.LocalPlayer.Character
+local weld = Instance.new("Weld",p.Torso)
+weld.Part0 = p.Torso
+
+local train = Instance.new("Part",p.Torso)
+train.Anchored = true
+train.CanCollide = false
+train.Size = Vector3.new(3,2,6)
+train.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
+weld.Part1 = train
+weld.C1 = CFrame.new(0,0,0) * CFrame.Angles(0,math.rad(180),0)
+train.Anchored = false
+local TrainMesh = Instance.new("SpecialMesh",train)
+TrainMesh.MeshType = Enum.MeshType.FileMesh
+TrainMesh.Scale = Vector3.new(0.020,0.020,0.015)
+TrainMesh.MeshId = "rbxassetid://431017802"
+TrainMesh.TextureId = "rbxassetid://431017809"
+
+
+local weld2 = Instance.new("Weld",p.Torso)
+weld2.Part0 = p.Torso
+local Smoke = Instance.new("Part",p.Torso)
+Smoke.Anchored = true
+Smoke.CanCollide = false
+Smoke.Size = Vector3.new(1,1,1)
+Smoke.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
+weld2.Part1 = Smoke
+weld2.C1 = CFrame.new(0,-4,3.5)-- * CFrame.Angles(0,math.rad(180),0)
+Smoke.Anchored = false
+Smoke.Transparency = 1;
+
+local Particle = Instance.new("ParticleEmitter",Smoke)
+Particle.Rate = 50;
+Particle.Speed = NumberRange.new(30,60);
+Particle.VelocitySpread = 4;
+Particle.Texture = "rbxassetid://133619974"
+
+local Light = Instance.new("SpotLight",train)
+Light.Angle = 45;
+Light.Brightness = 100;
+Light.Face = Enum.NormalId.Back;
+Light.Range = 30;
+
+p.Humanoid.WalkSpeed = 60;
+
+
+for i,v in pairs(p:GetChildren()) do
+	if v:IsA("Part") then
+		v.Transparency = 1;
+	elseif v:IsA("Hat") then
+		v:Destroy()
+	elseif v:IsA("Model") then
+		v:Destroy()
+	end
+end
+
+local function SFX(id) local s=Instance.new("Sound",p.Torso); s.SoundId = "rbxassetid://"..id; s.Volume = 1; return s; end
+train.Touched:connect(function(p)
+	if p.Parent then
+		if p.Parent:IsA("Model") then
+			if game.Players:FindFirstChild(p.Parent.Name) then
+				if p.Parent.Name ~= game.Players.LocalPlayer.Name then
+					game.Players:FindFirstChild(p.Parent.Name).Character:BreakJoints()
+					local Whistle = SFX(475073913)
+					Whistle:Play()
+				end
+			end
+		end
+	end
+end)
+
+local Music = SFX(190819252)
+Music.Looped = true;
+wait(1)
+end)
+
+Section:NewButton("Sword's", "you have 4 swaord's", function()
+    print("Clicked")
+loadstring(game:HttpGet("https://pastebin.com/raw/80juE2kw", true))()
+end)
+
+Section:NewButton("Big sword", "big boy knife", function()
+    print("Clicked")
+game:GetObjects("rbxassetid://169934427")[1].Parent=game.Players.LocalPlayer.Backpack
+end)
+
+Section:NewButton("dupe player", "have a twin", function()
+    print("Clicked")
+loadstring(game:GetObjects('rbxassetid://7339698872')[1].Source)() 
+end)
+
+Section:NewButton("player kick", "this will kick people in your sever", function()
+    print("Clicked")
+print("");
+game:GetService("Players").LocalPlayer:Kick("GO OUTSIDE AND TOUCH SOME GRASS")
+wait(2)
+while true do end
+end)
+
+
+Section:NewButton("Suicide", "kill you", function()
+    print("Clicked")
+    local A_1 = "This is it im doing it."
+local A_2 = "All"
+local Event = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest
+Event:FireServer(A_1, A_2)
+wait(1)
+local A_1 = "I'm going to commit oof."
+local A_2 = "All"
+local Event = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest
+Event:FireServer(A_1, A_2)
+wait(1)
+local A_1 = "Sayonara cruel world."
+local A_2 = "All"
+local Event = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest
+Event:FireServer(A_1, A_2)
+wait(1)
+LocalPlayer = game:GetService("Players").LocalPlayer
+LocalPlayer.Character.Humanoid:MoveTo(LocalPlayer.Character.HumanoidRootPart.Position + LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * 10)
+LocalPlayer.Character.Humanoid.Jump = true
+wait(0.5)
+function Iterate(instance, func)
+for i, v in next, instance:GetChildren() do
+func(v)
+end
+end
+limbs = {
+["Right Leg"] = true;
+["Right Arm"] = true;
+["Left Leg"] = true;
+["Left Arm"] = true;
+}
+Iterate(LocalPlayer.Character, function(v)
+if v:IsA("BasePart") then
+local attachment = Instance.new("Attachment")
+attachment.Parent = v
+attachment.Name = (v.Name .. "[Attachment]")
+if limbs[v.Name] then
+attachment.Position = Vector3.new(0, v.Size.Y/2, 0)
+elseif v.Name == "Head" then
+attachment.Position = Vector3.new(0, -v.Size.Y/2, 0)
+attachment.Rotation = Vector3.new(0, 0, -90)
+end
+end
+end)
+local leftLegAttachment = Instance.new("Attachment")
+leftLegAttachment.Position = Vector3.new(-.5, -1, 0)
+leftLegAttachment.Rotation = Vector3.new(0, -90, 0)
+local rightLegAttachment = Instance.new("Attachment")
+rightLegAttachment.Position = Vector3.new(.5, -1, 0)
+rightLegAttachment.Rotation = Vector3.new(0, -90, 0)
+rightLegAttachment.Parent, leftLegAttachment.Parent = LocalPlayer.Character.Torso, LocalPlayer.Character.Torso
+jointAttachments = {
+['Head'] = {
+['Attachment0'] = LocalPlayer.Character.Torso['NeckAttachment'];
+['Attachment1'] = LocalPlayer.Character.Head['Head[Attachment]'];
+};
+['Left Arm'] = {
+['Attachment0'] = LocalPlayer.Character.Torso['LeftCollarAttachment'];
+['Attachment1'] = LocalPlayer.Character['Left Arm']['Left Arm[Attachment]'];
+};
+['Right Arm'] = {
+['Attachment0'] = LocalPlayer.Character.Torso['RightCollarAttachment'];
+['Attachment1'] = LocalPlayer.Character['Right Arm']['Right Arm[Attachment]'];
+};
+['Left Leg'] = {
+['Attachment0'] = leftLegAttachment;
+['Attachment1'] = LocalPlayer.Character['Left Leg']['Left Leg[Attachment]'];
+};
+['Right Leg'] = {
+['Attachment0'] = rightLegAttachment;
+['Attachment1'] = LocalPlayer.Character['Right Leg']['Right Leg[Attachment]'];
+};
+}
+LocalPlayer.Character.Humanoid.PlatformStand = true
+Iterate(LocalPlayer.Character, function(v)
+if v:IsA("BasePart") then
+if jointAttachments[v.Name] then
+local ballSocketJoint = Instance.new("BallSocketConstraint")
+ballSocketJoint.Parent = v
+ballSocketJoint.Radius = 0.15
+ballSocketJoint.Attachment0, ballSocketJoint.Attachment1 = jointAttachments[v.Name]['Attachment0'], jointAttachments[v.Name]['Attachment1']
+end
+end
+end)
+Iterate(LocalPlayer.Character.Torso, function(v)
+if v:IsA("Motor") then
+v:Remove()
+end
+end)
+end)
+
+local Section = Tab:NewSection("Chat spam only use on a alt")
+
+Section:NewButton("chat filler", "spam the chat", function()
+    print("Clicked")
+    local message = "Police hub " -- change your message here
+
+    getgenv().spam = true; -- change to false to stop and true to start
+    
+    while getgenv().spam == true and task.wait(1) do -- change the message delay "1" to any number
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message,"All") -- leave it
+    end -- the loop end
+end)
+
+local Tab = Window:NewTab("Credit")
+
+local Section = Tab:NewSection("Credit")
+
+local Section = Tab:NewSection("Made by police#4602")
+
+local Section = Tab:NewSection("Police hub sever https://discord.gg/r6p9Ep2h2U")
+
+local Section = Tab:NewSection("and made by AngryFox_YT#1257")
+
+local Section = Tab:NewSection("His hub in the work when it is done i will put it here")
+
+local Tab = Window:NewTab("UI")
+
+local Section = Tab:NewSection("UI")
+
+Section:NewKeybind("KeybindText", "KeybindInfo", Enum.KeyCode.Z, function()
+	Library:ToggleUI()
+end)
